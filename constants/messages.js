@@ -1,0 +1,71 @@
+const ERRORS = {
+  // Authentication
+  ID_PASSWORD_REQUIRED: 'ID and password are required.',
+  INVALID_CREDENTIALS: 'Invalid ID or password.',
+  ID_ALREADY_EXISTS: 'ID already exists.',
+  SESSION_INVALID: 'Session invalid.',
+  NOT_LOGGED_IN: 'Not logged in',
+  ERROR_LOGGING_OUT: 'Error logging out.',
+  USER_NOT_FOUND: 'User not found.',
+  
+  // Validation
+  PASSWORD_REQUIREMENTS: 'Password must be at least 10 characters and include upper, lower, number, and symbol.',
+  INVALID_POINTS_VALUE: 'Invalid points value.',
+  INVALID_POINTS_AMOUNT: 'Invalid points amount. Must be non-zero number.',
+  
+  // Authorization
+  NOT_ALLOWED_EDIT_OTHER: "You are not allowed to edit another user's data.",
+  
+  // Server
+  INTERNAL_SERVER_ERROR: 'Internal server error.',
+  FAILED_TO_START_SERVER: 'Failed to start server:',
+  MONGO_URL_REQUIRED: 'MONGO_URL environment variable is required',
+  MYSQL_POOL_NOT_INITIALIZED: 'MySQL pool not initialized. Call connectMySQL() first.',
+};
+
+// Success Messages
+const SUCCESS = {
+  USER_REGISTERED: 'User registered successfully.',
+  LOGIN_SUCCESS: 'Login successful! Welcome,',
+  LOGGED_OUT: 'Logged out.',
+  POINTS_UPDATED: 'Points updated successfully.',
+  POINTS_ADDED: 'Points added successfully.',
+  POINTS_DEDUCTED: 'Points deducted successfully.',
+  GAME_CAN_START: 'Game can start.',
+  SERVER_RUNNING: 'Server is running. Ready for Unity game connection.',
+};
+
+// Console Messages
+const CONSOLE = {
+  SERVER_LISTENING: 'Server listening at http://localhost:',
+  UNITY_SERVER_READY: 'Unity game server ready.',
+  MONGODB_CONNECTED: 'MongoDB: Connected (sessions)',
+  MYSQL_CONNECTED: 'MySQL: Connected (user data & points)',
+  MONGODB_SUCCESS: 'Successfully connected to MongoDB!',
+  MONGODB_CLOSED: 'MongoDB connection closed.',
+  MYSQL_SUCCESS: 'Successfully connected to MySQL!',
+  MYSQL_CLOSED: 'MySQL connection pool closed.',
+  SIGTERM_RECEIVED: 'SIGTERM signal received: closing connections',
+  SIGINT_RECEIVED: 'SIGINT signal received: closing connections',
+  MONGODB_CONNECTION_ERROR: 'MongoDB connection error:',
+  MYSQL_CONNECTION_ERROR: 'MySQL connection error:',
+  ERROR_CLOSING_MONGODB: 'Error closing MongoDB connection:',
+  ERROR_CLOSING_MYSQL: 'Error closing MySQL connection:',
+  FAILED_TO_START_SERVER: 'Failed to start server:',
+  
+  // Error logs
+  REGISTRATION_ERROR: 'Registration error:',
+  LOGIN_ERROR: 'Login error:',
+  GET_USER_ERROR: 'Get user error:',
+  GET_POINTS_ERROR: 'Get points error:',
+  UPDATE_POINTS_ERROR: 'Update points error:',
+  ADD_POINTS_ERROR: 'Add points error:',
+  GET_POINT_HISTORY_ERROR: 'Get point history error:',
+};
+
+module.exports = {
+  ERRORS,
+  SUCCESS,
+  CONSOLE,
+};
+
