@@ -19,6 +19,7 @@ const { connectMySQL, closeMySQL } = require('./db/mysql/connectMySQL');
 // Routes
 const authRoutes = require('./routes/authRoutes');
 const gameRoutes = require('./routes/gameRoutes');
+const leaderboardRoutes = require('./routes/leaderboardRoutes');
 
 // Constants
 const { ERRORS, SUCCESS, CONSOLE, QUERIES, CONFIG } = require('./constants');
@@ -26,7 +27,10 @@ const { ERRORS, SUCCESS, CONSOLE, QUERIES, CONFIG } = require('./constants');
 const app = express();
 const port = process.env.PORT || CONFIG.DEFAULT_PORT;
 const path = require('path');
-const fs = require('fs');
+
+// Set EJS as the view engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 // ---------- Middleware ----------
 
@@ -83,92 +87,8 @@ app.use('/auth', authRoutes);
 // Game routes (points, game data, etc.)
 app.use('/game', gameRoutes);
 
-// Leaderboard page
-app.get('/leaderboard', async (req, res) => {
-  try {
-    const { getPool } = require('./db/mysql/connectMySQL');
-    const { QUERIES, CONFIG } = require('./constants');
-    const pool = getPool();
-    
-    const limit = Number.parseInt(req.query.limit, 10) || CONFIG.DEFAULT_LEADERBOARD_LIMIT;
-    
-    const [users] = await pool.execute(
-      QUERIES.SELECT_LEADERBOARD,
-      [limit]
-    );
-
-    // Render HTML page with separate template
-    const html = generateLeaderboardHTML(users);
-    res.send(html);
-  } catch (error) {
-    console.error('Leaderboard error:', error);
-    res.status(CONFIG.STATUS.INTERNAL_SERVER_ERROR).send('<h1>Error loading leaderboard</h1>');
-  }
-});
-
-// Helper function to generate leaderboard HTML
-function generateLeaderboardHTML(users) {
-  // Read HTML template
-  const templatePath = path.join(__dirname, 'views', 'leaderboard.html');
-  let html = fs.readFileSync(templatePath, 'utf8');
-  
-  // Generate table rows
-  const rows = users.map((user, index) => {
-    const rank = index + 1;
-    const displayName = user.name || user.ID || 'Anonymous';
-    const points = user.total_points || 0;
-    
-    // Medal emojis for top 3
-    let rankDisplay = rank;
-    if (rank === 1) rankDisplay = '🥇 1';
-    else if (rank === 2) rankDisplay = '🥈 2';
-    else if (rank === 3) rankDisplay = '🥉 3';
-    
-    return `
-      <tr>
-        <td class="rank">${rankDisplay}</td>
-        <td class="name">${escapeHtml(displayName)}</td>
-        <td class="points">${points.toLocaleString()}</td>
-      </tr>
-    `;
-  }).join('');
-
-  // Generate table HTML
-  const tableHTML = users.length > 0 ? `
-    <table>
-      <thead>
-        <tr>
-          <th>Rank</th>
-          <th>Player</th>
-          <th class="points-header">Points</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rows}
-      </tbody>
-    </table>
-  ` : `
-    <div class="empty">
-      No players yet. Be the first to join!
-    </div>
-  `;
-
-  // Replace placeholder with actual table
-  html = html.replace('{{LEADERBOARD_TABLE}}', tableHTML);
-  
-  return html;
-}
-
-// Helper function to escape HTML
-function escapeHtml(text) {
-  const str = String(text);
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
+// Leaderboard routes
+app.use('/leaderboard', leaderboardRoutes);
 
 // Unity-compatible endpoints (matching your GameLogic.cs)
 // POST endpoint for login (Unity sends form data to root)

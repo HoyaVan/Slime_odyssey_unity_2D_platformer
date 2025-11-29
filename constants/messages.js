@@ -7,6 +7,7 @@ const ERRORS = {
   NOT_LOGGED_IN: 'Not logged in',
   ERROR_LOGGING_OUT: 'Error logging out.',
   USER_NOT_FOUND: 'User not found.',
+  LEADERBOARD_ERROR: 'Error loading leaderboard',
   
   // Validation
   PASSWORD_REQUIREMENTS: 'Password must be at least 10 characters and include upper, lower, number, and symbol.',
@@ -33,6 +34,16 @@ const SUCCESS = {
   POINTS_DEDUCTED: 'Points deducted successfully.',
   GAME_CAN_START: 'Game can start.',
   SERVER_RUNNING: 'Server is running. Ready for Unity game connection.',
+  
+  // Leaderboard
+  LEADERBOARD_TITLE: '🏆Leaderboard🏆',
+  LEADERBOARD_SUBTITLE: 'Top Players by Points',
+  LEADERBOARD_EMPTY: 'No players yet. Be the first to join!',
+  LEADERBOARD_FOOTER: 'Unity Game Server - Leaderboard',
+  LEADERBOARD_RANK: 'Rank',
+  LEADERBOARD_PLAYER: 'Player',
+  LEADERBOARD_POINTS: 'Points',
+  LEADERBOARD_ERROR: 'Error loading leaderboard',
 };
 
 // Console Messages
