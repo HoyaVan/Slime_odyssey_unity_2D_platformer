@@ -1,6 +1,6 @@
 require('dotenv').config();
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const { ERRORS, CONSOLE, CONFIG } = require('../constants');
+const { ERRORS, CONSOLE, CONFIG } = require('../../constants');
 
 // Use environment variable for MongoDB URI (set in .env file)
 const uri = process.env.MONGO_URL;

@@ -17,11 +17,18 @@ const CONFIG = {
   
   // Database
   DEFAULT_MONGO_DB_NAME: 'game-session-db',
+  MONGO_SESSION_COLLECTION: 'sessions',
   MYSQL_PORT: process.env.MYSQL_PORT ? Number.parseInt(process.env.MYSQL_PORT, 10) : 3306,
   MYSQL_CONNECTION_LIMIT: 10,
   MYSQL_QUEUE_LIMIT: 0,
   MYSQL_SSL_ENABLED_VALUE: 'true', // String value for MYSQL_SSL env var
   MYSQL_SSL_CONFIG: process.env.MYSQL_SSL === 'true' ? { rejectUnauthorized: false } : false,
+  
+  // Application
+  VIEW_ENGINE: 'ejs',
+  VIEWS_DIR: 'views',
+  PUBLIC_DIR: 'public',
+  STATIC_CSS_PATH: '/css',
   
   // Validation
   PASSWORD_REGEX: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{10,}$/,
@@ -60,11 +67,18 @@ const CONFIG = {
     ID: 'ID',
     PW: 'PW',
     NAME: 'name',
+    ROLE: 'role',
     TOTAL_POINTS: 'total_points',
     POINT_NUM: 'point_num',
     CREATED_AT: 'created_at',
     USER_INDEX_ID: 'user_index_id',
     POINT_INDEX_ID: 'point_index_id',
+  },
+
+  // User roles
+  ROLES: {
+    PLAYER: 'player',
+    ADMIN: 'admin',
   },
 };
 

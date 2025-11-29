@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
+const cors = require('cors');
 
 // Validate environment variables
 const { validateEnv } = require('./db/validateEnv');
@@ -28,14 +29,14 @@ const app = express();
 const port = process.env.PORT || CONFIG.DEFAULT_PORT;
 const path = require('path');
 
-// Set EJS as the view engine
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+// Set view engine
+app.set('view engine', CONFIG.VIEW_ENGINE);
+app.set('views', path.join(__dirname, CONFIG.VIEWS_DIR));
 
 // ---------- Middleware ----------
 
 // Serve static files (CSS, JS, images, etc.)
-app.use('/css', express.static(path.join(__dirname, 'public', 'css')));
+app.use(CONFIG.STATIC_CSS_PATH, express.static(path.join(__dirname, CONFIG.PUBLIC_DIR, 'css')));
 
 // CORS Configuration for Unity client
 // If CORS_ORIGIN env var is set, use it (supports comma-separated list)
@@ -56,21 +57,57 @@ app.use(express.urlencoded({ extended: true }));
 
 // ---- Sessions (Cookies + Mongo) ----
 // Sessions are stored in MongoDB as requested
+const sessionDbName = process.env.MONGO_DB_NAME || CONFIG.DEFAULT_MONGO_DB_NAME;
+console.log(`[Session Config] Using MongoDB database: ${sessionDbName}`);
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true, // Changed to true to save all sessions
     cookie: {
       httpOnly: true,
       secure: CONFIG.SESSION_COOKIE_SECURE,
       sameSite: CONFIG.SESSION_COOKIE_SAME_SITE,
       maxAge: CONFIG.SESSION_MAX_AGE,
     },
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URL,
-      crypto: { secret: process.env.SESSION_CRYPTO_SECRET }, // encrypted in Mongo
-    }),
+    store: (() => {
+      const storeConfig = {
+        mongoUrl: process.env.MONGO_URL,
+        dbName: process.env.MONGO_DB_NAME || CONFIG.DEFAULT_MONGO_DB_NAME,
+        collectionName: CONFIG.MONGO_SESSION_COLLECTION,
+      };
+      
+      console.log('[MongoStore] Creating store with config:', {
+        dbName: storeConfig.dbName,
+        collectionName: storeConfig.collectionName,
+        hasCrypto: false // Temporarily disabled due to connect-mongo bug
+      });
+      
+      const store = MongoStore.create(storeConfig);
+      
+      // Add event listeners for debugging
+      store.on('error', (error) => {
+        console.error('[MongoStore Error]', error);
+        console.error('[MongoStore Error Details]', {
+          message: error.message,
+          stack: error.stack,
+          name: error.name
+        });
+      });
+      
+      store.on('connected', () => {
+        console.log('[MongoStore] Connected to MongoDB for sessions');
+        console.log(`[MongoStore] Database: ${process.env.MONGO_DB_NAME || CONFIG.DEFAULT_MONGO_DB_NAME}`);
+        console.log(`[MongoStore] Collection: ${CONFIG.MONGO_SESSION_COLLECTION}`);
+      });
+      
+      store.on('disconnected', () => {
+        console.warn('[MongoStore] Disconnected from MongoDB');
+      });
+      
+      return store;
+    })(),
   })
 );
 
@@ -79,6 +116,60 @@ app.use(
 // Status endpoint
 app.get('/', (req, res) => {
   res.send(SUCCESS.SERVER_RUNNING);
+});
+
+// Test endpoint to verify session creation
+app.get('/test-session', async (req, res) => {
+  try {
+    // Create a test session
+    req.session.testData = { timestamp: new Date().toISOString(), test: true };
+    req.session.visited = (req.session.visited || 0) + 1;
+    
+    console.log(`[Session Test] Session ID: ${req.sessionID}`);
+    console.log(`[Session Test] Session data:`, req.session);
+    console.log(`[Session Test] Store type:`, req.sessionStore?.constructor?.name);
+    
+    // Explicitly save the session with promise wrapper
+    await new Promise((resolve, reject) => {
+      req.session.save((err) => {
+        if (err) {
+          console.error('[Session Test] Save error:', err);
+          reject(err);
+        } else {
+          console.log(`[Session Test] Session saved successfully: ${req.sessionID}`);
+          resolve();
+        }
+      });
+    });
+    
+    // Verify session was saved by trying to get it
+    await new Promise((resolve, reject) => {
+      req.sessionStore.get(req.sessionID, (err, session) => {
+        if (err) {
+          console.error('[Session Test] Get error:', err);
+        } else {
+          console.log(`[Session Test] Retrieved session:`, session ? 'Found' : 'Not found');
+        }
+        resolve(); // Don't reject, just log
+      });
+    });
+    
+    res.json({ 
+      message: 'Session created! Check MongoDB.',
+      sessionId: req.sessionID,
+      sessionData: req.session.testData,
+      visited: req.session.visited,
+      database: process.env.MONGO_DB_NAME || CONFIG.DEFAULT_MONGO_DB_NAME,
+      storeType: req.sessionStore?.constructor?.name
+    });
+  } catch (error) {
+    console.error('[Session Test] Error:', error);
+    res.status(500).json({ 
+      error: 'Failed to save session', 
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
 });
 
 // Authentication routes
@@ -129,7 +220,8 @@ app.post('/', async (req, res, next) => {
     req.session[CONFIG.SESSION_KEYS.USER_ID] = user[CONFIG.COLUMNS.ID]; // Also store login ID for convenience
 
     res.json({ 
-      message: `${SUCCESS.LOGIN_SUCCESS} ${user[CONFIG.COLUMNS.NAME] || user[CONFIG.COLUMNS.ID]}.`,
+      message: `${SUCCESS.LOGIN_SUCCESS} ${user[CONFIG.COLUMNS.ID]}.`,
+      role: user[CONFIG.COLUMNS.ROLE] || CONFIG.ROLES.PLAYER,
       totalPoints: user[CONFIG.COLUMNS.TOTAL_POINTS]
     });
   } catch (error) {

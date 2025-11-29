@@ -7,9 +7,9 @@ USE unity_game_db;
 -- User table
 CREATE TABLE IF NOT EXISTS User (
     index_id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255),
     ID VARCHAR(255) NOT NULL UNIQUE COMMENT 'Login ID',
     PW VARCHAR(255) NOT NULL COMMENT 'Password hash',
+    role VARCHAR(50) DEFAULT 'player' COMMENT 'User role: player or admin',
     total_points INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS UserPoint (
 
 -- Indexes for faster lookups
 CREATE INDEX idx_user_login_id ON User(ID);
+CREATE INDEX idx_user_role ON User(role);
 CREATE INDEX idx_userpoint_user ON UserPoint(user_index_id);
 CREATE INDEX idx_userpoint_point ON UserPoint(point_index_id);
 

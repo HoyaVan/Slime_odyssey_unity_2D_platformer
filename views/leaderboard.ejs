@@ -25,7 +25,7 @@
           <tbody>
             <% users.forEach((user, index) => { 
               const rank = index + 1;
-              const displayName = user.name || user.ID || 'Anonymous';
+              const displayName = user.ID || 'Anonymous';
               const points = user.total_points || 0;
               
               // Medal emojis for top 3

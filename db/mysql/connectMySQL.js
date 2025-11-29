@@ -1,6 +1,6 @@
 require('dotenv').config();
 const mysql = require('mysql2/promise');
-const { CONSOLE, ERRORS, CONFIG } = require('../constants');
+const { CONSOLE, ERRORS, CONFIG } = require('../../constants');
 
 let pool = null;
 

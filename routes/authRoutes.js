@@ -7,7 +7,7 @@ const { ERRORS, SUCCESS, CONSOLE, QUERIES, CONFIG } = require('../constants');
 
 // REGISTER (for testing / creating accounts)
 router.post('/register', async (req, res) => {
-  const { id, password, name } = req.body;
+  const { id, password, role } = req.body;
 
   if (!id || !password) {
     return res.status(CONFIG.STATUS.BAD_REQUEST).json({ error: ERRORS.ID_PASSWORD_REQUIRED });
@@ -17,6 +17,12 @@ router.post('/register', async (req, res) => {
     return res.status(CONFIG.STATUS.BAD_REQUEST).json({
       error: ERRORS.PASSWORD_REQUIREMENTS,
     });
+  }
+
+  // Validate role if provided
+  const userRole = role || CONFIG.ROLES.PLAYER; // Default to 'player' if not provided
+  if (userRole !== CONFIG.ROLES.PLAYER && userRole !== CONFIG.ROLES.ADMIN) {
+    return res.status(CONFIG.STATUS.BAD_REQUEST).json({ error: ERRORS.INVALID_ROLE });
   }
 
   try {
@@ -35,19 +41,37 @@ router.post('/register', async (req, res) => {
     // Hash password
     const passwordHash = await bcrypt.hash(password, CONFIG.BCRYPT_ROUNDS);
 
-    // Insert new user
+    // Insert new user with role
     const [result] = await pool.execute(
       QUERIES.INSERT_USER,
-      [id, passwordHash, name || null, 0]
+      [id, passwordHash, userRole, 0]
     );
 
     res.status(CONFIG.STATUS.CREATED).json({ 
       message: SUCCESS.USER_REGISTERED,
-      userIndexId: result.insertId
+      userIndexId: result.insertId,
+      role: userRole
     });
   } catch (error) {
     console.error(CONSOLE.REGISTRATION_ERROR, error);
-    res.status(CONFIG.STATUS.INTERNAL_SERVER_ERROR).json({ error: ERRORS.INTERNAL_SERVER_ERROR });
+    // Log the full error for debugging
+    console.error('Registration error details:', error.message);
+    console.error('SQL Error Code:', error.code);
+    console.error('Full error stack:', error.stack);
+    
+    // Check if it's a missing column error
+    if (error.message?.includes('role')) {
+      console.error('\n⚠️  DATABASE SCHEMA ISSUE DETECTED!');
+      console.error('The "role" column is missing from the User table.');
+      console.error('Please run the migration script: db/mysql/add_role_column.sql');
+      console.error('Or run this SQL directly:');
+      console.error('  ALTER TABLE User ADD COLUMN role VARCHAR(50) DEFAULT \'player\';');
+    }
+    
+    res.status(CONFIG.STATUS.INTERNAL_SERVER_ERROR).json({ 
+      error: ERRORS.INTERNAL_SERVER_ERROR,
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
@@ -86,8 +110,9 @@ router.post('/login', async (req, res) => {
     req.session[CONFIG.SESSION_KEYS.USER_ID] = user[CONFIG.COLUMNS.ID]; // Also store login ID for convenience
 
     res.json({ 
-      message: `${SUCCESS.LOGIN_SUCCESS} ${user[CONFIG.COLUMNS.NAME] || user[CONFIG.COLUMNS.ID]}.`,
+      message: `${SUCCESS.LOGIN_SUCCESS} ${user[CONFIG.COLUMNS.ID]}.`,
       userIndexId: user[CONFIG.COLUMNS.INDEX_ID],
+      role: user[CONFIG.COLUMNS.ROLE] || CONFIG.ROLES.PLAYER,
       totalPoints: user[CONFIG.COLUMNS.TOTAL_POINTS]
     });
   } catch (error) {
@@ -131,7 +156,7 @@ router.get('/me', requireAuth, async (req, res) => {
       user: {
         indexId: user[CONFIG.COLUMNS.INDEX_ID],
         id: user[CONFIG.COLUMNS.ID],
-        name: user[CONFIG.COLUMNS.NAME],
+        role: user[CONFIG.COLUMNS.ROLE] || CONFIG.ROLES.PLAYER,
         totalPoints: user[CONFIG.COLUMNS.TOTAL_POINTS]
       }
     });

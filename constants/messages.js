@@ -11,11 +11,13 @@ const ERRORS = {
   
   // Validation
   PASSWORD_REQUIREMENTS: 'Password must be at least 10 characters and include upper, lower, number, and symbol.',
+  INVALID_ROLE: 'Invalid role. Must be "player" or "admin".',
   INVALID_POINTS_VALUE: 'Invalid points value.',
   INVALID_POINTS_AMOUNT: 'Invalid points amount. Must be non-zero number.',
   
   // Authorization
   NOT_ALLOWED_EDIT_OTHER: "You are not allowed to edit another user's data.",
+  ADMIN_ONLY: 'This action requires administrator privileges.',
   
   // Server
   INTERNAL_SERVER_ERROR: 'Internal server error.',
