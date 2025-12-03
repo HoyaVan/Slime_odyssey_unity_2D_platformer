@@ -3,6 +3,9 @@
 .env.local
 .env.*.local
 
+# Unity C# Scripts (exclude from version control)
+# Unity_*.cs
+
 # Dependencies
 node_modules/
 npm-debug.log*

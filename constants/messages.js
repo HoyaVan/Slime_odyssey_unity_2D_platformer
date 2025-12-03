@@ -14,10 +14,15 @@ const ERRORS = {
   INVALID_ROLE: 'Invalid role. Must be "player" or "admin".',
   INVALID_POINTS_VALUE: 'Invalid points value.',
   INVALID_POINTS_AMOUNT: 'Invalid points amount. Must be non-zero number.',
+  INVALID_LIMIT_VALUE: 'Invalid limit value.',
+  INVALID_USER_ID: 'Invalid user ID.',
+  USER_ID_REQUIRED: 'User ID is required. Use /admin/points/:userId for specific user updates.',
+  SESSION_NOT_FOUND: 'Session not found',
   
   // Authorization
   NOT_ALLOWED_EDIT_OTHER: "You are not allowed to edit another user's data.",
   ADMIN_ONLY: 'This action requires administrator privileges.',
+  ADMIN_REGISTRATION_DISABLED: 'Admin accounts cannot be created through registration. Please contact an administrator.',
   
   // Server
   INTERNAL_SERVER_ERROR: 'Internal server error.',
@@ -34,6 +39,8 @@ const SUCCESS = {
   POINTS_UPDATED: 'Points updated successfully.',
   POINTS_ADDED: 'Points added successfully.',
   POINTS_DEDUCTED: 'Points deducted successfully.',
+  POINTS_UPDATED_BY_ADMIN: 'User points updated successfully by admin',
+  POINTS_ADDED_BY_ADMIN: 'Points added successfully by admin',
   GAME_CAN_START: 'Game can start.',
   SERVER_RUNNING: 'Server is running. Ready for Unity game connection.',
   
@@ -74,6 +81,14 @@ const CONSOLE = {
   UPDATE_POINTS_ERROR: 'Update points error:',
   ADD_POINTS_ERROR: 'Add points error:',
   GET_POINT_HISTORY_ERROR: 'Get point history error:',
+  
+  // Log prefixes
+  LOG_PREFIX_AUTH: '[Auth]',
+  LOG_PREFIX_ADMIN: '[Admin]',
+  LOG_PREFIX_SCORE_SUBMIT: '[Score Submit]',
+  LOG_PREFIX_SESSION_TEST: '[Session Test]',
+  LOG_PREFIX_LOGIN: '[Login]',
+  LOG_PREFIX_LEADERBOARD: '[Leaderboard API]',
 };
 
 module.exports = {

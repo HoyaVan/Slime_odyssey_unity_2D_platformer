@@ -50,7 +50,5 @@ async function closeMongoDB() {
 
 module.exports = {
   connectMongoDB,
-  closeMongoDB,
-  getDb: () => db,
-  getClient: () => client
+  closeMongoDB
 };

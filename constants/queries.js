@@ -4,6 +4,7 @@ const QUERIES = {
   SELECT_USER_BY_LOGIN_ID: 'SELECT index_id, ID, PW, role, total_points FROM User WHERE ID = ?',
   SELECT_USER_BY_INDEX_ID: 'SELECT index_id, ID, role, total_points FROM User WHERE index_id = ?',
   SELECT_USER_TOTAL_POINTS: 'SELECT total_points FROM User WHERE index_id = ?',
+  SELECT_ALL_USERS_ADMIN: 'SELECT index_id, ID, role, total_points, created_at, updated_at FROM User ORDER BY created_at DESC',
   SELECT_LEADERBOARD: 'SELECT ID, total_points FROM User ORDER BY total_points DESC LIMIT ?',
   INSERT_USER: 'INSERT INTO User (ID, PW, role, total_points) VALUES (?, ?, ?, ?)',
   UPDATE_USER_POINTS: 'UPDATE User SET total_points = ? WHERE index_id = ?',

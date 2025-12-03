@@ -37,6 +37,10 @@ const CONFIG = {
   // Pagination
   DEFAULT_POINT_HISTORY_LIMIT: 50,
   DEFAULT_LEADERBOARD_LIMIT: 100,
+  DEFAULT_LEADERBOARD_API_LIMIT: 20,
+  DEFAULT_ADMIN_ALL_HISTORY_LIMIT: 100,
+  MAX_LIMIT_VALUE: 1000,
+  MIN_LIMIT_VALUE: 1,
   
   // HTTP Status Codes
   STATUS: {
@@ -53,6 +57,9 @@ const CONFIG = {
     USER_INDEX_ID: 'userIndexId',
     USER_ID: 'userId',
   },
+  
+  // Authorization
+  AUTH_HEADER_PREFIX: 'Session ',
   
   // Table names
   TABLES: {

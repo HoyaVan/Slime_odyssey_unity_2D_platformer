@@ -125,18 +125,18 @@ app.get('/test-session', async (req, res) => {
     req.session.testData = { timestamp: new Date().toISOString(), test: true };
     req.session.visited = (req.session.visited || 0) + 1;
     
-    console.log(`[Session Test] Session ID: ${req.sessionID}`);
-    console.log(`[Session Test] Session data:`, req.session);
-    console.log(`[Session Test] Store type:`, req.sessionStore?.constructor?.name);
+    console.log(`${CONSOLE.LOG_PREFIX_SESSION_TEST} Session ID: ${req.sessionID}`);
+    console.log(`${CONSOLE.LOG_PREFIX_SESSION_TEST} Session data:`, req.session);
+    console.log(`${CONSOLE.LOG_PREFIX_SESSION_TEST} Store type:`, req.sessionStore?.constructor?.name);
     
     // Explicitly save the session with promise wrapper
     await new Promise((resolve, reject) => {
       req.session.save((err) => {
         if (err) {
-          console.error('[Session Test] Save error:', err);
+          console.error(`${CONSOLE.LOG_PREFIX_SESSION_TEST} Save error:`, err);
           reject(err);
         } else {
-          console.log(`[Session Test] Session saved successfully: ${req.sessionID}`);
+          console.log(`${CONSOLE.LOG_PREFIX_SESSION_TEST} Session saved successfully: ${req.sessionID}`);
           resolve();
         }
       });
@@ -146,9 +146,9 @@ app.get('/test-session', async (req, res) => {
     await new Promise((resolve, reject) => {
       req.sessionStore.get(req.sessionID, (err, session) => {
         if (err) {
-          console.error('[Session Test] Get error:', err);
+          console.error(`${CONSOLE.LOG_PREFIX_SESSION_TEST} Get error:`, err);
         } else {
-          console.log(`[Session Test] Retrieved session:`, session ? 'Found' : 'Not found');
+          console.log(`${CONSOLE.LOG_PREFIX_SESSION_TEST} Retrieved session:`, session ? 'Found' : 'Not found');
         }
         resolve(); // Don't reject, just log
       });
@@ -163,7 +163,7 @@ app.get('/test-session', async (req, res) => {
       storeType: req.sessionStore?.constructor?.name
     });
   } catch (error) {
-    console.error('[Session Test] Error:', error);
+    console.error(`${CONSOLE.LOG_PREFIX_SESSION_TEST} Error:`, error);
     res.status(500).json({ 
       error: 'Failed to save session', 
       details: error.message,
@@ -219,10 +219,16 @@ app.post('/', async (req, res, next) => {
     req.session[CONFIG.SESSION_KEYS.USER_INDEX_ID] = user[CONFIG.COLUMNS.INDEX_ID];
     req.session[CONFIG.SESSION_KEYS.USER_ID] = user[CONFIG.COLUMNS.ID]; // Also store login ID for convenience
 
+    // 디버깅: 세션 생성 확인
+    console.log(`${CONSOLE.LOG_PREFIX_LOGIN} Session created:`, req.sessionID);
+    console.log(`${CONSOLE.LOG_PREFIX_LOGIN} Session cookie will be set:`, req.headers.cookie || 'none');
+    console.log(`${CONSOLE.LOG_PREFIX_LOGIN} User logged in:`, user[CONFIG.COLUMNS.ID], 'Index:', user[CONFIG.COLUMNS.INDEX_ID]);
+
     res.json({ 
       message: `${SUCCESS.LOGIN_SUCCESS} ${user[CONFIG.COLUMNS.ID]}.`,
       role: user[CONFIG.COLUMNS.ROLE] || CONFIG.ROLES.PLAYER,
-      totalPoints: user[CONFIG.COLUMNS.TOTAL_POINTS]
+      totalPoints: user[CONFIG.COLUMNS.TOTAL_POINTS],
+      sessionId: req.sessionID // 디버깅용: 세션 ID를 응답에 포함
     });
   } catch (error) {
     console.error(CONSOLE.LOGIN_ERROR, error);

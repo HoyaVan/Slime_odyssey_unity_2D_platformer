@@ -19,10 +19,15 @@ router.post('/register', async (req, res) => {
     });
   }
 
-  // Validate role if provided
-  const userRole = role || CONFIG.ROLES.PLAYER; // Default to 'player' if not provided
-  if (userRole !== CONFIG.ROLES.PLAYER && userRole !== CONFIG.ROLES.ADMIN) {
-    return res.status(CONFIG.STATUS.BAD_REQUEST).json({ error: ERRORS.INVALID_ROLE });
+  // Force role to 'player' - users cannot create admin accounts through registration
+  // Admin accounts must be created through admin tools or database directly
+  const userRole = CONFIG.ROLES.PLAYER;
+  
+  // Reject if user tries to register as admin
+  if (role && role.toLowerCase() === CONFIG.ROLES.ADMIN.toLowerCase()) {
+    return res.status(CONFIG.STATUS.BAD_REQUEST).json({ 
+      error: ERRORS.ADMIN_REGISTRATION_DISABLED
+    });
   }
 
   try {

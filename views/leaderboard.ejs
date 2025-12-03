@@ -36,7 +36,11 @@
             %>
               <tr>
                 <td class="rank"><%= rankDisplay %></td>
-                <td class="name"><%= displayName %></td>
+                <td class="name">
+                  <a href="#" class="player-link" data-user-id="<%= displayName %>" onclick="showPointHistory('<%= displayName %>'); return false;">
+                    <%= displayName %>
+                  </a>
+                </td>
                 <td class="points"><%= points.toLocaleString() %></td>
               </tr>
             <% }); %>
@@ -52,6 +56,99 @@
       <%= footer %>
     </div>
   </div>
+
+  <!-- Point History Modal -->
+  <div id="historyModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalUserName">Point History</h2>
+        <span class="close" onclick="closeModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div id="historyLoading" class="loading">Loading...</div>
+        <div id="historyContent" class="history-content" style="display: none;">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Points</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+            </tbody>
+          </table>
+        </div>
+        <div id="historyEmpty" class="empty" style="display: none;">
+          No point history available.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function showPointHistory(userId) {
+      const modal = document.getElementById('historyModal');
+      const userNameElement = document.getElementById('modalUserName');
+      const loadingElement = document.getElementById('historyLoading');
+      const contentElement = document.getElementById('historyContent');
+      const emptyElement = document.getElementById('historyEmpty');
+      const tableBody = document.getElementById('historyTableBody');
+
+      // Show modal
+      modal.style.display = 'block';
+      userNameElement.textContent = `${userId}'s Point History`;
+      
+      // Show loading, hide content
+      loadingElement.style.display = 'block';
+      contentElement.style.display = 'none';
+      emptyElement.style.display = 'none';
+      tableBody.innerHTML = '';
+
+      try {
+        const response = await fetch(`/leaderboard/api/history/${encodeURIComponent(userId)}`);
+        const data = await response.json();
+
+        if (data.history && data.history.length > 0) {
+          // Display history
+          tableBody.innerHTML = data.history.map(item => {
+            const date = new Date(item.created_at || item.transaction_date);
+            const formattedDate = date.toLocaleString();
+            const points = item.point_num || 0;
+            const pointsClass = points > 0 ? 'points-positive' : 'points-negative';
+            const pointsSign = points > 0 ? '+' : '';
+            
+            return `
+              <tr>
+                <td>${formattedDate}</td>
+                <td class="${pointsClass}">${pointsSign}${points.toLocaleString()}</td>
+              </tr>
+            `;
+          }).join('');
+
+          loadingElement.style.display = 'none';
+          contentElement.style.display = 'block';
+        } else {
+          loadingElement.style.display = 'none';
+          emptyElement.style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Error loading point history:', error);
+        loadingElement.textContent = 'Error loading point history.';
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('historyModal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside of it
+    window.onclick = function(event) {
+      const modal = document.getElementById('historyModal');
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    }
+  </script>
 </body>
 </html>
 
