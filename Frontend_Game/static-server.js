@@ -4,7 +4,7 @@
 const express = require('express');
 const path = require('path');
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 
 // Serve static files with custom headers for .br files
 app.use((req, res, next) => {
