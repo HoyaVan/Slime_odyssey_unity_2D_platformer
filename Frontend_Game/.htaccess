@@ -1,0 +1,27 @@
+# Apache .htaccess for Unity WebGL Brotli files
+# Note: Digital Ocean App Platform uses nginx, but this might work for other hosts
+
+<FilesMatch "\.(js|wasm|data|framework)\.br$">
+    Header set Content-Encoding br
+    Header set Content-Type "application/javascript" env=JS_BR
+    Header set Content-Type "application/wasm" env=WASM_BR
+    Header set Content-Type "application/octet-stream" env=DATA_BR
+</FilesMatch>
+
+# Set content types based on extension
+<FilesMatch "\.js\.br$">
+    Header set Content-Type "application/javascript"
+</FilesMatch>
+
+<FilesMatch "\.wasm\.br$">
+    Header set Content-Type "application/wasm"
+</FilesMatch>
+
+<FilesMatch "\.data\.br$">
+    Header set Content-Type "application/octet-stream"
+</FilesMatch>
+
+<FilesMatch "\.framework\.js\.br$">
+    Header set Content-Type "application/javascript"
+</FilesMatch>
+

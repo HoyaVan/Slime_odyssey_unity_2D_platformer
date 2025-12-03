@@ -1,0 +1,13 @@
+{
+  "name": "unity-webgl-server",
+  "version": "1.0.0",
+  "description": "Static server for Unity WebGL game with proper Brotli headers",
+  "main": "static-server.js",
+  "scripts": {
+    "start": "node static-server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
+
