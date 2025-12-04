@@ -2,7 +2,7 @@
 // Use this if Digital Ocean App Platform static hosting doesn't support _headers file
 
 const express = require('express');
-const path = require('path');
+const path = require('node:path');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -57,9 +57,28 @@ app.use('/game', createProxyMiddleware({
   changeOrigin: true,
   logLevel: 'debug',
   secure: false,
+  // When app.use('/game', ...) is used, Express strips /game from req.path
+  // So /game/admin/users becomes /admin/users, we need to add /game back
+  pathRewrite: function (path, req) {
+    // path is /admin/users (without /game prefix)
+    // We need to forward /game/admin/users to backend
+    return '/game' + path; // Add /game prefix back
+  },
+  onProxyReq: (proxyReq, req, res) => {
+    // Log proxy requests for debugging
+    const targetPath = '/game' + req.path; // Add /game back
+    const targetUrl = `${BACKEND_URL}${targetPath}`;
+    console.log(`[Proxy /game] ${req.method} ${req.originalUrl} -> ${targetUrl}`);
+  },
+  onProxyRes: (proxyRes, req, res) => {
+    console.log(`[Proxy /game] Response ${proxyRes.statusCode} for ${req.method} ${req.originalUrl}`);
+  },
   onError: (err, req, res) => {
     console.error('[Proxy Error /game]', err.message);
-    res.status(500).json({ error: 'Backend connection failed' });
+    console.error('[Proxy Error] Request was:', req.method, req.originalUrl);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Backend connection failed' });
+    }
   },
 }));
 
@@ -68,9 +87,15 @@ app.use('/leaderboard', createProxyMiddleware({
   changeOrigin: true,
   logLevel: 'debug',
   secure: false,
+  // Add /leaderboard prefix back when forwarding
+  pathRewrite: function (path, req) {
+    return '/leaderboard' + path;
+  },
   onError: (err, req, res) => {
     console.error('[Proxy Error /leaderboard]', err.message);
-    res.status(500).json({ error: 'Backend connection failed' });
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Backend connection failed' });
+    }
   },
 }));
 
