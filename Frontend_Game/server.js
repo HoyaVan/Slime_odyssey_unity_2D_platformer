@@ -8,7 +8,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Backend URL - Set this via environment variable in Digital Ocean
-const BACKEND_URL = process.env.BACKEND_URL || 'https://your-backend-app.ondigitalocean.app';
+// Remove trailing slash to prevent double slashes in proxied URLs
+const BACKEND_URL = (process.env.BACKEND_URL || 'https://your-backend-app.ondigitalocean.app').replace(/\/+$/, '');
 
 // Proxy API requests to backend server FIRST (before static files)
 // This allows Unity to use relative URLs (e.g., /auth/login) without hardcoding backend URL
