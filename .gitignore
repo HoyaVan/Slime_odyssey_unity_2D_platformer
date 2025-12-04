@@ -5,6 +5,7 @@
 
 # Unity C# Scripts (exclude from version control)
 # Unity_*.cs
+Frontend_Game/script/
 
 # Dependencies
 node_modules/
