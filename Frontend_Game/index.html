@@ -6,35 +6,6 @@
     <title>Unity Web Player | 2D DB Project</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
-    <script>
-      // Intercept requests to localhost:3000 and redirect to relative URLs (which will be proxied)
-      // This allows Unity to connect to backend without rebuilding
-      (function() {
-        const BACKEND_URL = window.location.origin; // Use same origin (proxy will handle it)
-        
-        // Override fetch to intercept localhost:3000 requests
-        const originalFetch = window.fetch;
-        window.fetch = function(url, options) {
-          if (typeof url === 'string' && url.includes('localhost:3000')) {
-            // Replace localhost:3000 with relative URL
-            url = url.replace(/https?:\/\/localhost:3000/g, '');
-            console.log('[Proxy] Redirecting fetch request:', url);
-          }
-          return originalFetch.call(this, url, options);
-        };
-        
-        // Override XMLHttpRequest to intercept localhost:3000 requests
-        const originalOpen = XMLHttpRequest.prototype.open;
-        XMLHttpRequest.prototype.open = function(method, url, async, user, password) {
-          if (typeof url === 'string' && url.includes('localhost:3000')) {
-            // Replace localhost:3000 with relative URL
-            url = url.replace(/https?:\/\/localhost:3000/g, '');
-            console.log('[Proxy] Redirecting XHR request:', method, url);
-          }
-          return originalOpen.call(this, method, url, async, user, password);
-        };
-      })();
-    </script>
   </head>
   <body>
     <div id="unity-container" class="unity-desktop">
@@ -81,12 +52,12 @@
       }
 
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/MyFirstGameForHosting.loader.js";
+      var loaderUrl = buildUrl + "/MyFirstGameForHosting2.loader.js";
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/MyFirstGameForHosting.data.br",
-        frameworkUrl: buildUrl + "/MyFirstGameForHosting.framework.js.br",
-        codeUrl: buildUrl + "/MyFirstGameForHosting.wasm.br",
+        dataUrl: buildUrl + "/MyFirstGameForHosting2.data.br",
+        frameworkUrl: buildUrl + "/MyFirstGameForHosting2.framework.js.br",
+        codeUrl: buildUrl + "/MyFirstGameForHosting2.wasm.br",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "DefaultCompany",
         productName: "2D DB Project",
