@@ -3,8 +3,41 @@
 
 const express = require('express');
 const path = require('path');
+const { createProxyMiddleware } = require('http-proxy-middleware');
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Backend URL - Set this via environment variable in Digital Ocean
+const BACKEND_URL = process.env.BACKEND_URL || 'https://your-backend-app.ondigitalocean.app';
+
+// Proxy API requests to backend server FIRST (before static files)
+// This allows Unity to use relative URLs (e.g., /auth/login) without hardcoding backend URL
+// Unity can make requests to /auth, /game, /leaderboard, or POST to / and they'll be forwarded to backend
+
+app.use('/auth', createProxyMiddleware({
+  target: BACKEND_URL,
+  changeOrigin: true,
+  logLevel: 'debug',
+}));
+
+app.use('/game', createProxyMiddleware({
+  target: BACKEND_URL,
+  changeOrigin: true,
+  logLevel: 'debug',
+}));
+
+app.use('/leaderboard', createProxyMiddleware({
+  target: BACKEND_URL,
+  changeOrigin: true,
+  logLevel: 'debug',
+}));
+
+// Proxy root POST requests (Unity login endpoint)
+app.post('/', createProxyMiddleware({
+  target: BACKEND_URL,
+  changeOrigin: true,
+  logLevel: 'debug',
+}));
 
 // Serve static files with custom headers for .br files
 app.use((req, res, next) => {
@@ -49,7 +82,7 @@ app.use(express.static(__dirname, {
   }
 }));
 
-// Serve index.html for root
+// Serve index.html for root GET (must be last)
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -57,5 +90,5 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Unity WebGL static server running on port ${PORT}`);
   console.log(`Serving files from: ${__dirname}`);
+  console.log(`Backend URL: ${BACKEND_URL}`);
 });
-
