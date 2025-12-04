@@ -15,25 +15,36 @@ const BACKEND_URL = (process.env.BACKEND_URL || 'https://your-backend-app.ondigi
 // This allows Unity to use relative URLs (e.g., /auth/login) without hardcoding backend URL
 // Unity can make requests to /auth, /game, /leaderboard, or POST to / and they'll be forwarded to backend
 
+// Proxy /auth routes - preserve full path when forwarding
 app.use('/auth', createProxyMiddleware({
   target: BACKEND_URL,
   changeOrigin: true,
   logLevel: 'debug',
-  secure: false, // Allow self-signed certificates (Digital Ocean uses valid certs, but this prevents SSL issues)
+  secure: false,
+  // When app.use('/auth', ...) is used, Express strips /auth from req.path
+  // So req.path becomes /register, but req.originalUrl is /auth/register
+  // We need to add /auth back when forwarding to backend
+  pathRewrite: function (path, req) {
+    // path is /register (without /auth prefix)
+    // We need to forward /auth/register to backend
+    return '/auth' + path; // Add /auth prefix back
+  },
   onProxyReq: (proxyReq, req, res) => {
     // Log proxy requests for debugging
-    console.log(`[Proxy /auth] ${req.method} ${req.path} -> ${BACKEND_URL}${req.path}`);
-    if (req.body) {
-      console.log(`[Proxy /auth] Body:`, JSON.stringify(req.body));
+    const forwardedPath = req.originalUrl; // /auth/register
+    const targetUrl = `${BACKEND_URL}${forwardedPath}`;
+    console.log(`[Proxy /auth] ${req.method} ${req.originalUrl} -> ${targetUrl}`);
+    if (req.body && Object.keys(req.body).length > 0) {
+      console.log(`[Proxy /auth] Request body:`, JSON.stringify(req.body));
     }
   },
   onProxyRes: (proxyRes, req, res) => {
     // Log proxy responses
-    console.log(`[Proxy /auth] Response ${proxyRes.statusCode} for ${req.method} ${req.path}`);
+    console.log(`[Proxy /auth] Response ${proxyRes.statusCode} for ${req.method} ${req.originalUrl}`);
   },
   onError: (err, req, res) => {
     console.error('[Proxy Error /auth]', err.message);
-    console.error('[Proxy Error] Request was:', req.method, req.path);
+    console.error('[Proxy Error] Request was:', req.method, req.originalUrl);
     console.error('[Proxy Error] Backend URL:', BACKEND_URL);
     if (!res.headersSent) {
       res.status(500).json({ error: 'Backend connection failed', details: err.message });
@@ -45,6 +56,7 @@ app.use('/game', createProxyMiddleware({
   target: BACKEND_URL,
   changeOrigin: true,
   logLevel: 'debug',
+  secure: false,
   onError: (err, req, res) => {
     console.error('[Proxy Error /game]', err.message);
     res.status(500).json({ error: 'Backend connection failed' });
@@ -55,6 +67,7 @@ app.use('/leaderboard', createProxyMiddleware({
   target: BACKEND_URL,
   changeOrigin: true,
   logLevel: 'debug',
+  secure: false,
   onError: (err, req, res) => {
     console.error('[Proxy Error /leaderboard]', err.message);
     res.status(500).json({ error: 'Backend connection failed' });
@@ -67,6 +80,7 @@ app.post('/', createProxyMiddleware({
   target: BACKEND_URL,
   changeOrigin: true,
   logLevel: 'debug',
+  secure: false,
   onError: (err, req, res) => {
     console.error('[Proxy Error]', err.message);
     res.status(500).json({ error: 'Proxy error: ' + err.message });
