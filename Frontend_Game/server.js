@@ -19,25 +19,42 @@ app.use('/auth', createProxyMiddleware({
   target: BACKEND_URL,
   changeOrigin: true,
   logLevel: 'debug',
+  onError: (err, req, res) => {
+    console.error('[Proxy Error /auth]', err.message);
+    res.status(500).json({ error: 'Backend connection failed' });
+  },
 }));
 
 app.use('/game', createProxyMiddleware({
   target: BACKEND_URL,
   changeOrigin: true,
   logLevel: 'debug',
+  onError: (err, req, res) => {
+    console.error('[Proxy Error /game]', err.message);
+    res.status(500).json({ error: 'Backend connection failed' });
+  },
 }));
 
 app.use('/leaderboard', createProxyMiddleware({
   target: BACKEND_URL,
   changeOrigin: true,
   logLevel: 'debug',
+  onError: (err, req, res) => {
+    console.error('[Proxy Error /leaderboard]', err.message);
+    res.status(500).json({ error: 'Backend connection failed' });
+  },
 }));
 
 // Proxy root POST requests (Unity login endpoint)
+// Must be before static files and GET / route
 app.post('/', createProxyMiddleware({
   target: BACKEND_URL,
   changeOrigin: true,
   logLevel: 'debug',
+  onError: (err, req, res) => {
+    console.error('[Proxy Error]', err.message);
+    res.status(500).json({ error: 'Proxy error: ' + err.message });
+  },
 }));
 
 // Serve static files with custom headers for .br files

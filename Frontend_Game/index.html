@@ -6,6 +6,54 @@
     <title>Unity Web Player | 2D DB Project</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
+    <script>
+      // Intercept requests to localhost:3000 and redirect to relative URLs (which will be proxied)
+      // This allows Unity to connect to backend without rebuilding
+      (function() {
+        console.log('[Proxy] Request interceptor initialized');
+        
+        // Override fetch to intercept localhost:3000 requests
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options) {
+          let originalUrl = url;
+          if (typeof url === 'string') {
+            if (url.includes('localhost:3000')) {
+              // Replace localhost:3000 with relative URL
+              url = url.replace(/https?:\/\/localhost:3000/g, '');
+              console.log('[Proxy] Redirecting fetch:', originalUrl, '->', url);
+            }
+          } else if (url && url.url) {
+            // Handle Request object
+            if (url.url.includes('localhost:3000')) {
+              url = new Request(url.url.replace(/https?:\/\/localhost:3000/g, ''), url);
+              console.log('[Proxy] Redirecting Request object:', originalUrl.url, '->', url.url);
+            }
+          }
+          return originalFetch.call(this, url, options);
+        };
+        
+        // Override XMLHttpRequest to intercept localhost:3000 requests
+        const originalOpen = XMLHttpRequest.prototype.open;
+        XMLHttpRequest.prototype.open = function(method, url, async, user, password) {
+          const originalUrl = url;
+          if (typeof url === 'string' && url.includes('localhost:3000')) {
+            // Replace localhost:3000 with relative URL
+            url = url.replace(/https?:\/\/localhost:3000/g, '');
+            console.log('[Proxy] Redirecting XHR:', method, originalUrl, '->', url);
+          }
+          return originalOpen.call(this, method, url, async !== undefined ? async : true, user, password);
+        };
+        
+        // Also intercept send to catch any missed cases
+        const originalSend = XMLHttpRequest.prototype.send;
+        XMLHttpRequest.prototype.send = function(data) {
+          if (this._url && this._url.includes('localhost:3000')) {
+            console.warn('[Proxy] Warning: XHR URL still contains localhost:3000:', this._url);
+          }
+          return originalSend.call(this, data);
+        };
+      })();
+    </script>
   </head>
   <body>
     <div id="unity-container" class="unity-desktop">
