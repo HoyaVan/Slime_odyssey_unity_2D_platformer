@@ -9,7 +9,7 @@ public class CameraFollow2D : MonoBehaviour
     public float smoothTime = 0.2f;
 
     [Header("Level Bounds (optional)")]
-    public BoxCollider2D cameraBounds;   // assign your CameraBounds here
+    public BoxCollider2D cameraBounds;   // assign CameraBounds here
 
     Vector3 velocity;
     Vector2 minBounds;
@@ -32,13 +32,13 @@ public class CameraFollow2D : MonoBehaviour
     {
         if (target == null) return;
 
-        // 1) desired position following the player
+        // desired position following the player
         Vector3 targetPos = new Vector3(
             target.position.x + followOffset.x,
             target.position.y + followOffset.y,
             transform.position.z);
 
-        // 2) clamp **camera** to bounds (so we never show outside the box)
+        // clamp **camera** to bounds (so we never show outside the box)
         if (cameraBounds != null)
         {
             float halfHeight = cam.orthographicSize;
@@ -48,7 +48,7 @@ public class CameraFollow2D : MonoBehaviour
             targetPos.y = Mathf.Clamp(targetPos.y, minBounds.y + halfHeight, maxBounds.y - halfHeight);
         }
 
-        // 3) smoothly move camera only (player is untouched)
+        // smoothly move camera only (player is untouched)
         transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref velocity, smoothTime);
     }
 }
