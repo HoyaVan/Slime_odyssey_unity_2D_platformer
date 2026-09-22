@@ -1,6 +1,4 @@
 ## Slime Odyssey
-
-## Theme
 As a slime, collect all the flowers (coins) before contacting the human warrior.
 
 ## How to play
